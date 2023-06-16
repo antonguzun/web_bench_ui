@@ -1,4 +1,5 @@
 use gloo_net::http::Request;
+use itertools::Itertools;
 use serde::{Deserialize, Serialize};
 use yew::function_component;
 use yew::html;
@@ -31,50 +32,76 @@ pub struct TestingResult {
 #[derive(Properties, PartialEq)]
 struct TestingResultProps {
     results: Vec<TestingResult>,
-    // on_click: Callback<Video>,
+    selected_test_name: String,
 }
 
 #[function_component(TestingResultList)]
-fn videos_list(props: &TestingResultProps) -> Html {
-    // let on_click = on_click.clone();
-    props.results.iter().map(|result| {
-        // let on_video_select = {
-        //     let on_click = on_click.clone();
-        //     let video = video.clone();
-        //     Callback::from(move |_| {
-        //         on_click.emit(video.clone())
-        //     })
-        // };
-
-        html! {
-            <p key={result.test_name.clone()} >{format!("{}: {}", result.webserver_name, result.language)}</p>
-        }
-    }).collect()
+fn test_result_list(props: &TestingResultProps) -> Html {
+    props
+        .results
+        .iter()
+        .filter(|r| r.test_name == props.selected_test_name)
+        .sorted_by_key(|r| -(r.requests_per_second as i64))
+        .map(|result| {
+            html! {
+                <>
+                  <tr>
+                    <td>{&result.webserver_name}</td>
+                    <td>{&result.language}</td>
+                    <td>{&result.database.clone().unwrap_or("no db".to_owned())}</td>
+                    <td>{&result.orm.clone().unwrap_or("no orm".to_owned())}</td>
+                    <td>{&result.requests_per_second}</td>
+                    <td>{&result.latency_p50}</td>
+                    <td>{&result.latency_p75}</td>
+                    <td>{&result.latency_p90}</td>
+                    <td>{&result.latency_p99}</td>
+                  </tr>
+                </>
+            }
+        })
+        .collect()
 }
 
-// #[derive(Properties, PartialEq)]
-// struct VideosDetailsProps {
-//     video: Video,
-// }
+#[derive(Properties, PartialEq)]
+struct TestNameTabsProps {
+    test_names: Vec<String>,
+    on_click: Callback<String>,
+}
 
-// #[function_component(VideoDetails)]
-// fn video_details(VideosDetailsProps { video }: &VideosDetailsProps) -> Html {
-//     html! {
-//         <div>
-//             <h3>{ video.title.clone() }</h3>
-//             <img src="https://via.placeholder.com/640x360.png?text=Video+Player+Placeholder" alt="video thumbnail" />
-//         </div>
-//     }
-// }
+#[function_component(TestNameTabs)]
+fn test_tabs(props: &TestNameTabsProps) -> Html {
+    let on_click = props.on_click.clone();
+    props
+        .test_names
+        .iter()
+        .map(|test_name| {
+            let on_tab_select = {
+                let on_click = on_click.clone();
+                let test_name = test_name.clone();
+                Callback::from(move |_| {
+                    on_click.emit(test_name.clone())
+                })
+            }; 
+            html! {
+               <>
+                    <button id={test_name.clone()} class="tablinks" onclick={&on_tab_select.clone()}>{test_name.replace("_", " " )}</button>
+               </>
+            }
+        })
+        .collect()
+}
 
 #[function_component]
 fn App() -> Html {
+    let selected_test_name = use_state(|| "not existed testname".to_owned());
     let report = use_state(|| None);
     {
         let report = report.clone();
+        let selected_test_name = selected_test_name.clone();
         use_effect_with_deps(
             move |_| {
                 let report = report.clone();
+                let selected_test_name = selected_test_name.clone();
                 wasm_bindgen_futures::spawn_local(async move {
                     let fetched_report: Report = Request::get("/web_bench/temp")
                         .send()
@@ -83,6 +110,11 @@ fn App() -> Html {
                         .json()
                         .await
                         .unwrap();
+
+                    if fetched_report.results.len() > 0 {
+                        selected_test_name.set(fetched_report.results[0].test_name.clone());
+                    }
+
                     report.set(Some(fetched_report));
                 });
                 || ()
@@ -98,16 +130,29 @@ fn App() -> Html {
         Some(v) => v.results.clone(),
         None => vec![],
     };
+    let test_names = &testing_results
+        .iter()
+        .map(|x| x.test_name.to_owned())
+        .unique()
+        .collect::<Vec<String>>();
+    let on_tab_select = {
+        let selected_test_name = selected_test_name.clone();
+        Callback::from(move |test_name: String| {
+            selected_test_name.set(test_name)
+        })
+    };
 
     html! {
         <>
-            <h1>{ "RustConf Explorer" }</h1>
+            <h1>{ "Web bench" }</h1>
             <div>
-                <h3>{"Videos to watch"}</h3>
+                <h3>{"test cases"}</h3>
                 {created_at}
-                <TestingResultList results={testing_results} />
-                // <VideosList videos={(*videos).clone()} on_click={on_video_select.clone()} />
-                // { for details }
+               <br/>
+
+                <TestNameTabs test_names={(*test_names).clone()} on_click={on_tab_select.clone()} />
+
+                <TestingResultList results={testing_results} selected_test_name={(*selected_test_name).clone()} />
             </div>
         </>
     }
