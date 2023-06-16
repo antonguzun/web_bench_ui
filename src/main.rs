@@ -98,11 +98,16 @@ fn App() -> Html {
             (),
         );
     }
+    let created_at = match &*videos {
+        Some(v) => v.created_at.clone(),
+        None => "Not found".to_owned(),
+    };
     html! {
         <>
             <h1>{ "RustConf Explorer" }</h1>
             <div>
                 <h3>{"Videos to watch"}</h3>
+                {created_at}
                 // <VideosList videos={(*videos).clone()} on_click={on_video_select.clone()} />
                 // { for details }
             </div>
