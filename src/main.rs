@@ -9,13 +9,13 @@ use yew::Html;
 use yew::Properties;
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct Root {
+pub struct Report {
     pub created_at: String,
-    pub results: Vec<Result>,
+    pub results: Vec<TestingResult>,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct Result {
+pub struct TestingResult {
     pub test_name: String,
     pub webserver_name: String,
     pub language: String,
@@ -28,86 +28,84 @@ pub struct Result {
     pub latency_p99: String,
 }
 
-#[derive(Clone, PartialEq, Deserialize)]
-struct Video {
-    id: usize,
-    title: String,
-    speaker: String,
-    url: String,
-}
-
 #[derive(Properties, PartialEq)]
-struct VideosListProps {
-    videos: Vec<Video>,
-    on_click: Callback<Video>,
+struct TestingResultProps {
+    results: Vec<TestingResult>,
+    // on_click: Callback<Video>,
 }
 
-#[function_component(VideosList)]
-fn videos_list(VideosListProps { videos, on_click }: &VideosListProps) -> Html {
-    let on_click = on_click.clone();
-    videos.iter().map(|video| {
-        let on_video_select = {
-            let on_click = on_click.clone();
-            let video = video.clone();
-            Callback::from(move |_| {
-                on_click.emit(video.clone())
-            })
-        };
+#[function_component(TestingResultList)]
+fn videos_list(props: &TestingResultProps) -> Html {
+    // let on_click = on_click.clone();
+    props.results.iter().map(|result| {
+        // let on_video_select = {
+        //     let on_click = on_click.clone();
+        //     let video = video.clone();
+        //     Callback::from(move |_| {
+        //         on_click.emit(video.clone())
+        //     })
+        // };
 
         html! {
-            <p key={video.id} onclick={on_video_select}>{format!("{}: {}", video.speaker, video.title)}</p>
+            <p key={result.test_name.clone()} >{format!("{}: {}", result.webserver_name, result.language)}</p>
         }
     }).collect()
 }
 
-#[derive(Properties, PartialEq)]
-struct VideosDetailsProps {
-    video: Video,
-}
+// #[derive(Properties, PartialEq)]
+// struct VideosDetailsProps {
+//     video: Video,
+// }
 
-#[function_component(VideoDetails)]
-fn video_details(VideosDetailsProps { video }: &VideosDetailsProps) -> Html {
-    html! {
-        <div>
-            <h3>{ video.title.clone() }</h3>
-            <img src="https://via.placeholder.com/640x360.png?text=Video+Player+Placeholder" alt="video thumbnail" />
-        </div>
-    }
-}
+// #[function_component(VideoDetails)]
+// fn video_details(VideosDetailsProps { video }: &VideosDetailsProps) -> Html {
+//     html! {
+//         <div>
+//             <h3>{ video.title.clone() }</h3>
+//             <img src="https://via.placeholder.com/640x360.png?text=Video+Player+Placeholder" alt="video thumbnail" />
+//         </div>
+//     }
+// }
 
 #[function_component]
 fn App() -> Html {
-    let videos = use_state(|| None);
+    let report = use_state(|| None);
     {
-        let videos = videos.clone();
+        let report = report.clone();
         use_effect_with_deps(
             move |_| {
-                let videos = videos.clone();
+                let report = report.clone();
                 wasm_bindgen_futures::spawn_local(async move {
-                    let fetched_videos: Root = Request::get("/web_bench/temp")
+                    let fetched_report: Report = Request::get("/web_bench/temp")
                         .send()
                         .await
                         .unwrap()
                         .json()
                         .await
                         .unwrap();
-                    videos.set(Some(fetched_videos));
+                    report.set(Some(fetched_report));
                 });
                 || ()
             },
             (),
         );
     }
-    let created_at = match &*videos {
+    let created_at = match &*report {
         Some(v) => v.created_at.clone(),
         None => "Not found".to_owned(),
     };
+    let testing_results = match &*report {
+        Some(v) => v.results.clone(),
+        None => vec![],
+    };
+
     html! {
         <>
             <h1>{ "RustConf Explorer" }</h1>
             <div>
                 <h3>{"Videos to watch"}</h3>
                 {created_at}
+                <TestingResultList results={testing_results} />
                 // <VideosList videos={(*videos).clone()} on_click={on_video_select.clone()} />
                 // { for details }
             </div>
