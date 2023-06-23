@@ -1,0 +1,63 @@
+.lolkek {
+  background-color: #ff5858;
+}
+
+body {
+  font-family: tahoma, serif;
+}
+
+.tab_btn {
+  font-family: tahoma, serif;
+  font-size: medium;
+  height: 50px;
+  width: 100px;
+  border-top-style: solid;
+  border-right-style: none;
+  border-bottom-style: solid;
+  border-left-style: none;
+  border-width: 1px;
+  border-image: linear-gradient(to left, white, black, white) 10% 10% 10%;
+  background: white;
+
+  margin-top: 30px;
+  margin-bottom: 30px;
+  margin-right: 20px;
+  margin-left: 20px;
+}
+
+button:hover {
+  border-width: 3px;
+}
+
+td {
+  padding-top: 5px;
+  padding-left: 13px;
+  padding-right: 13px;
+  padding-bottom: 5px;
+}
+
+.right_align {
+  text-align: right;
+}
+
+.left_align {
+  text-align: left;
+}
+
+.center {
+  text-align: center;
+}
+
+.center_t {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+table {
+  font-variant-numeric: lining-nums tabular-nums;
+  border-collapse: collapse;
+}
+
+.first_line td {
+  border-bottom: 1px solid gray;
+}

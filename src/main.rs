@@ -1,6 +1,7 @@
 use gloo_net::http::Request;
 use itertools::Itertools;
 use serde::{Deserialize, Serialize};
+use yew::Children;
 use yew::function_component;
 use yew::html;
 use yew::use_effect_with_deps;
@@ -8,6 +9,7 @@ use yew::use_state;
 use yew::Callback;
 use yew::Html;
 use yew::Properties;
+use yew::classes;
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Report {
@@ -29,6 +31,39 @@ pub struct TestingResult {
     pub latency_p99: String,
 }
 
+
+#[derive(Properties, PartialEq)]
+pub struct BenchTableProps {
+    pub children: Children,
+}
+
+#[function_component]
+fn BenchTable(props: &BenchTableProps) -> Html {
+    html! {
+        <div>
+        <table class={classes!("center_t")}>
+            <thead>
+              <tr class={classes!("first_line")}>
+                <td class={classes!("left_align")}>{"Web Server"}</td>
+                <td class={classes!("left_align")}>{"Language"}</td>
+                <td class={classes!("left_align")}>{"Database"}</td>
+                <td class={classes!("left_align")}>{"ORM"}</td>
+                <td class={classes!("right_align")}>{"RPS"}</td>
+                <td class={classes!("right_align")}>{"Latency p50"}</td>
+                <td class={classes!("right_align")}>{"Latency p75"}</td>
+                <td class={classes!("right_align")}>{"Latency p90"}</td>
+                <td class={classes!("right_align")}>{"Latency p99"}</td>
+              </tr>
+            </thead>
+            <tbody>
+                { for props.children.iter() }
+            </tbody>
+        </table>
+        </div>
+
+    }
+}
+
 #[derive(Properties, PartialEq)]
 struct TestingResultProps {
     results: Vec<TestingResult>,
@@ -46,15 +81,15 @@ fn test_result_list(props: &TestingResultProps) -> Html {
             html! {
                 <>
                   <tr>
-                    <td>{&result.webserver_name}</td>
-                    <td>{&result.language}</td>
-                    <td>{&result.database.clone().unwrap_or("no db".to_owned())}</td>
-                    <td>{&result.orm.clone().unwrap_or("no orm".to_owned())}</td>
-                    <td>{&result.requests_per_second}</td>
-                    <td>{&result.latency_p50}</td>
-                    <td>{&result.latency_p75}</td>
-                    <td>{&result.latency_p90}</td>
-                    <td>{&result.latency_p99}</td>
+                    <td class={classes!("left_align")}>{&result.webserver_name}</td>
+                    <td class={classes!("left_align")}>{&result.language}</td>
+                    <td class={classes!("left_align")}>{&result.database.clone().unwrap_or("no db".to_owned())}</td>
+                    <td class={classes!("left_align")}>{&result.orm.clone().unwrap_or("no orm".to_owned())}</td>
+                    <td class={classes!("right_align", "font-variant-numeric")}>{&result.requests_per_second}</td>
+                    <td class={classes!("right_align")}>{&result.latency_p50}</td>
+                    <td class={classes!("right_align")}>{&result.latency_p75}</td>
+                    <td class={classes!("right_align")}>{&result.latency_p90}</td>
+                    <td class={classes!("right_align")}>{&result.latency_p99}</td>
                   </tr>
                 </>
             }
@@ -83,9 +118,7 @@ fn test_tabs(props: &TestNameTabsProps) -> Html {
                 })
             }; 
             html! {
-               <>
-                    <button id={test_name.clone()} class="tablinks" onclick={&on_tab_select.clone()}>{test_name.replace("_", " " )}</button>
-               </>
+               <button id={test_name.clone()} class={classes!("tab_btn")} onclick={&on_tab_select.clone()}>{test_name.replace("_", " " )}</button>
             }
         })
         .collect()
@@ -103,7 +136,7 @@ fn App() -> Html {
                 let report = report.clone();
                 let selected_test_name = selected_test_name.clone();
                 wasm_bindgen_futures::spawn_local(async move {
-                    let fetched_report: Report = Request::get("/web_bench/temp")
+                    let fetched_report: Report = Request::get("/web_benchmark/reports/latest")
                         .send()
                         .await
                         .unwrap()
@@ -144,16 +177,17 @@ fn App() -> Html {
 
     html! {
         <>
-            <h1>{ "Web bench" }</h1>
-            <div>
-                <h3>{"test cases"}</h3>
+            <div class={classes!("center")}>
+                <h1>{ "Web servers bench" }</h1>
+
                 {created_at}
-               <br/>
+                <br/>
 
                 <TestNameTabs test_names={(*test_names).clone()} on_click={on_tab_select.clone()} />
-
-                <TestingResultList results={testing_results} selected_test_name={(*selected_test_name).clone()} />
             </div>
+            <BenchTable>
+                <TestingResultList results={testing_results} selected_test_name={(*selected_test_name).clone()} />
+            </BenchTable>
         </>
     }
 }
