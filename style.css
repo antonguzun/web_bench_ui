@@ -1,9 +1,6 @@
-.lolkek {
-  background-color: #ff5858;
-}
-
 body {
   font-family: tahoma, serif;
+  background-color: #fffaf2;
 }
 
 .tab_btn {
@@ -17,7 +14,7 @@ body {
   border-left-style: none;
   border-width: 1px;
   border-image: linear-gradient(to left, white, black, white) 10% 10% 10%;
-  background: white;
+  background: #fffaf2;
 
   margin-top: 30px;
   margin-bottom: 30px;
@@ -56,8 +53,15 @@ td {
 table {
   font-variant-numeric: lining-nums tabular-nums;
   border-collapse: collapse;
+  margin-bottom: 20px
 }
 
 .first_line td {
   border-bottom: 1px solid gray;
+}
+
+.chart .axis line {
+	stroke: black;
+  fill: none;
+  shape-rendering: crispEdges;
 }

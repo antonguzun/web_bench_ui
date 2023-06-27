@@ -1,3 +1,5 @@
+use std::cmp::max;
+
 use gloo_net::http::Request;
 use itertools::Itertools;
 use serde::{Deserialize, Serialize};
@@ -40,7 +42,6 @@ pub struct BenchTableProps {
 #[function_component]
 fn BenchTable(props: &BenchTableProps) -> Html {
     html! {
-        <div>
         <table class={classes!("center_t")}>
             <thead>
               <tr class={classes!("first_line")}>
@@ -59,8 +60,6 @@ fn BenchTable(props: &BenchTableProps) -> Html {
                 { for props.children.iter() }
             </tbody>
         </table>
-        </div>
-
     }
 }
 
@@ -85,7 +84,7 @@ fn test_result_list(props: &TestingResultProps) -> Html {
                     <td class={classes!("left_align")}>{&result.language}</td>
                     <td class={classes!("left_align")}>{&result.database.clone().unwrap_or("no db".to_owned())}</td>
                     <td class={classes!("left_align")}>{&result.orm.clone().unwrap_or("no orm".to_owned())}</td>
-                    <td class={classes!("right_align", "font-variant-numeric")}>{&result.requests_per_second}</td>
+                    <td class={classes!("right_align", "font-variant-numeric")}>{format!("{:.2}", &result.requests_per_second)}</td>
                     <td class={classes!("right_align")}>{&result.latency_p50}</td>
                     <td class={classes!("right_align")}>{&result.latency_p75}</td>
                     <td class={classes!("right_align")}>{&result.latency_p90}</td>
@@ -122,6 +121,79 @@ fn test_tabs(props: &TestNameTabsProps) -> Html {
             }
         })
         .collect()
+}
+
+#[derive(Properties, PartialEq)]
+struct BarChartProps{
+    results: Vec<TestingResult>,
+    selected_test_name: String,
+}
+
+#[function_component(BarChart)]
+fn bar_chart(props: &BarChartProps) -> Html {
+    let fill_color = "fill: rgb(152, 171, 197)";
+    let bar_width = 35.0;
+    let space_width = 4.0;
+    let max_height = 250.0;
+    // let number_of_bars = &props.results.iter().filter(|r| r.test_name == props.selected_test_name).count();
+    // let total_width = *number_of_bars as f64 * (bar_width + space_width);
+    // let x_offset = (500.0 - total_width) / 2.0;
+    let x_offset = 0.0;
+    let max_rps = match &props.results.iter().filter(|r| r.test_name == props.selected_test_name).max_by_key(|v| v.requests_per_second as i32){
+        Some(v) => v.requests_per_second,
+        None => return html!{},
+    };
+    let y_axis_range = (0..250000 + 1 ).step_by((250000 / 10) as usize);
+    let one_percent = max_height / max_rps;
+    html!{
+            <svg style="width: 90%" viewBox="0 0 800 300" >
+                <path class="domain" d="M-6,0H0V235H-6"></path>
+                <g class="y axis">
+                    // <g transform={format!("translate(0,{})", 250)}>
+                    <g transform="translate(0,250)">
+                        <line x2="-6" y2="0"></line>
+                        <text dy=".32em" style="text-anchor: end;" x="-9" y="0">{0}</text>
+                    </g>
+
+                    {
+                        y_axis_range
+                            .map(| y| {
+                                let value_height = max_height/250000.0 * y as f64;
+                                html! {
+                                    <g transform={format!("translate(0,{})", value_height)}>
+                                        <line x2="-6" y2="0"></line>
+                                        <text dy=".32em" style="text-anchor: end;" x="-9" y="0">{y}</text>
+                                    </g>
+                                }
+                            })
+                            .collect::<Html>()
+                     }
+                </g>
+                {
+                    props
+                        .results
+                        .iter()
+                        .filter(|r| r.test_name == props.selected_test_name)
+                        .sorted_by_key(|r| -(r.requests_per_second as i64))
+                        .enumerate()
+                        .map(|(i, result)| {
+                            let rect_height = result.requests_per_second * one_percent;
+                            let y = max_height - rect_height;
+                            let x = i as f64 * (bar_width + space_width);
+                            html! {
+                                <rect 
+                                    style={fill_color} 
+                                    width={format!("{}", bar_width)} 
+                                    x={format!{"{}", x+x_offset}} 
+                                    y={format!{"{}", y}} 
+                                    height={format!{"{}", rect_height}}>
+                                </rect>
+                            }
+                        })
+                        .collect::<Html>()
+                 }
+            </svg>
+    }
 }
 
 #[function_component]
@@ -178,16 +250,23 @@ fn App() -> Html {
     html! {
         <>
             <div class={classes!("center")}>
-                <h1>{ "Web servers bench" }</h1>
+                <div class={classes!("row")}>
+                    <h1>{ "Web servers bench" }</h1>
 
-                {created_at}
-                <br/>
+                    {created_at}
+                    <br/>
 
-                <TestNameTabs test_names={(*test_names).clone()} on_click={on_tab_select.clone()} />
+                    <TestNameTabs test_names={(*test_names).clone()} on_click={on_tab_select.clone()} />
+                </div>
+
+                <div style="display: block; margin: auto">
+                    <BenchTable>
+                        <TestingResultList results={testing_results.clone()} selected_test_name={(*selected_test_name).clone()} />
+                    </BenchTable>
+
+                    <BarChart results={testing_results.clone()} selected_test_name={(*selected_test_name).clone()}></BarChart>
+                </div>
             </div>
-            <BenchTable>
-                <TestingResultList results={testing_results} selected_test_name={(*selected_test_name).clone()} />
-            </BenchTable>
         </>
     }
 }
