@@ -60,8 +60,10 @@ table {
   border-bottom: 1px solid gray;
 }
 
-.chart .axis line {
-	stroke: black;
+line {
+  stroke-width: 1;
+  opacity: 1;
+  stroke: gray;
   fill: none;
-  shape-rendering: crispEdges;
+  shape-rendering: geometricPrecision;
 }

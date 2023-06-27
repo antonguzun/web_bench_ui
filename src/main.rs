@@ -138,7 +138,7 @@ fn bar_chart(props: &BarChartProps) -> Html {
     // let number_of_bars = &props.results.iter().filter(|r| r.test_name == props.selected_test_name).count();
     // let total_width = *number_of_bars as f64 * (bar_width + space_width);
     // let x_offset = (500.0 - total_width) / 2.0;
-    let x_offset = 0.0;
+    let x_offset = 100.0;
     let max_rps = match &props.results.iter().filter(|r| r.test_name == props.selected_test_name).max_by_key(|v| v.requests_per_second as i32){
         Some(v) => v.requests_per_second,
         None => return html!{},
@@ -150,19 +150,14 @@ fn bar_chart(props: &BarChartProps) -> Html {
                 <path class="domain" d="M-6,0H0V235H-6"></path>
                 <g class="y axis">
                     // <g transform={format!("translate(0,{})", 250)}>
-                    <g transform="translate(0,250)">
-                        <line x2="-6" y2="0"></line>
-                        <text dy=".32em" style="text-anchor: end;" x="-9" y="0">{0}</text>
-                    </g>
-
                     {
                         y_axis_range
                             .map(| y| {
-                                let value_height = max_height/250000.0 * y as f64;
+                                let value_height = max_height/250000.0 * (250000-y) as f64;
                                 html! {
                                     <g transform={format!("translate(0,{})", value_height)}>
-                                        <line x2="-6" y2="0"></line>
-                                        <text dy=".32em" style="text-anchor: end;" x="-9" y="0">{y}</text>
+                                        <line x1="100" y1="0" x2="92" y2="0"></line>
+                                        <text class={classes!("right_align")} height="0.3em" width="0.3em" >{y}</text>
                                     </g>
                                 }
                             })
