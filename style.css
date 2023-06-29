@@ -69,6 +69,10 @@ line {
 }
 
 .small_svg_text {
-  font: italic 8px sans-serif;
+  font: italic 13px sans-serif;
   opacity: 0.7;
+}
+
+svg {
+  width: inherit;
 }

@@ -5,7 +5,6 @@ use web_bench_ui::components::table::BenchTable;
 use web_bench_ui::components::table::TestingResultList;
 use web_bench_ui::components::tabs::TestNameTabs;
 use web_bench_ui::entities::Report;
-use web_sys;
 use yew::classes;
 use yew::function_component;
 use yew::html;
@@ -59,19 +58,10 @@ fn App() -> Html {
         .unique()
         .collect::<Vec<String>>();
 
-    let mut table_size = 0;
     let on_tab_select = {
         let selected_test_name = selected_test_name.clone();
-        let window = web_sys::window().unwrap();
-        let document = window.document().unwrap();
-        table_size = match document.get_element_by_id("lolkek") {
-            Some(x) => x.client_width(),
-            None => 0,
-        };
         Callback::from(move |test_name: String| selected_test_name.set(test_name))
     };
-
-    // client_width();
 
     html! {
         <>
@@ -80,17 +70,16 @@ fn App() -> Html {
                     <h1>{ "Web servers bench" }</h1>
 
                     {created_at}
-
-                    <br/>
-                    {table_size}
                     <br/>
 
                     <TestNameTabs test_names={(*test_names).clone()} on_click={on_tab_select.clone()} />
                 </div>
 
-                <div style="display: block; margin: auto">
+                <div style="width: fit-content; margin: auto">
                     <BenchTable>
-                        <TestingResultList id={"lolkek"} results={testing_results.clone()} selected_test_name={(*selected_test_name).clone()} />
+                        <TestingResultList
+                            results={testing_results.clone()}
+                            selected_test_name={(*selected_test_name).clone()} />
                     </BenchTable>
 
                     <BarChart results={testing_results.clone()} selected_test_name={(*selected_test_name).clone()}></BarChart>

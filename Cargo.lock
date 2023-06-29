@@ -891,7 +891,6 @@ dependencies = [
  "stylist",
  "wasm-bindgen-futures",
  "wasm-logger",
- "web-sys",
  "yew",
 ]
 
