@@ -21,7 +21,7 @@ pub fn bar_chart(props: &BarChartProps) -> Html {
     let fill_color = "fill: rgb(152, 171, 197)";
 
     let x_max_len = 1000.0;
-    let local_x_offset = 100.0;
+    let local_x_offset = 70.0;
 
     let max_bar_width = 55.0;
     let min_bar_width = 15.0;
@@ -43,7 +43,7 @@ pub fn bar_chart(props: &BarChartProps) -> Html {
     };
 
     let space_width = bar_width * 0.1;
-    let max_height = 250.0;
+    let max_height = 270.0;
 
     let max_rps = match &props
         .results
@@ -64,7 +64,7 @@ pub fn bar_chart(props: &BarChartProps) -> Html {
     html! {
         <>
             // {format!("t_w:{} w_w:{} offset_x:{}", table_size, window_width, x_offset)}
-            // <svg style="90%" viewBox="0 0 800 330" > 
+            // <svg style="90%" viewBox="0 0 800 330" >
             <svg viewBox="0 0 1000 330">
                 <g transform="translate(0, 10)">
 
@@ -103,8 +103,8 @@ pub fn bar_chart(props: &BarChartProps) -> Html {
                     <text
                         class={classes!("small_svg_text")}
                         transform="rotate(-90)"
-                        y={format!("{}", local_x_offset - axis_space_width)}
-                        x={format!("{}", axis_space_width * -1.0)}
+                        y={format!("{}", local_x_offset - axis_space_width + 2.0)}
+                        x={format!("{}", axis_space_width)}
                         style="text-anchor: end">
                             {"Rows / sec"}
                     </text>
@@ -125,7 +125,7 @@ pub fn bar_chart(props: &BarChartProps) -> Html {
                                     <rect
                                         style={fill_color}
                                         width={format!("{}", bar_width)}
-                                        x={format!{"{}", x+local_x_offset}}
+                                        x={format!{"{}", x+local_x_offset + 3.0}}
                                         y={format!{"{}", y}}
                                         height={format!{"{}", rect_height}}>
                                     </rect>
