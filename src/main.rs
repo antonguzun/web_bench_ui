@@ -1,10 +1,9 @@
-use gloo_net::http::Request;
 use itertools::Itertools;
 use web_bench_ui::components::barchart::BarChart;
 use web_bench_ui::components::table::BenchTable;
 use web_bench_ui::components::table::TestingResultList;
 use web_bench_ui::components::tabs::TestNameTabs;
-use web_bench_ui::entities::Report;
+use web_bench_ui::services::load_latest_report;
 use yew::classes;
 use yew::function_component;
 use yew::html;
@@ -17,33 +16,21 @@ use yew::Html;
 fn App() -> Html {
     let selected_test_name = use_state(|| "not existed testname".to_owned());
     let report = use_state(|| None);
+
     {
         let report = report.clone();
         let selected_test_name = selected_test_name.clone();
+
         use_effect_with_deps(
+            // on first render
             move |_| {
-                let report = report.clone();
-                let selected_test_name = selected_test_name.clone();
-                wasm_bindgen_futures::spawn_local(async move {
-                    let fetched_report: Report = Request::get("/web_benchmark/reports/latest")
-                        .send()
-                        .await
-                        .unwrap()
-                        .json()
-                        .await
-                        .unwrap();
-
-                    if fetched_report.results.len() > 0 {
-                        selected_test_name.set(fetched_report.results[0].test_name.clone());
-                    }
-
-                    report.set(Some(fetched_report));
-                });
-                || ()
+                load_latest_report(&report, &selected_test_name);
             },
+            // on last render do nothing
             (),
         );
     }
+
     let created_at = match &*report {
         Some(v) => v.created_at.clone(),
         None => "Not found".to_owned(),
