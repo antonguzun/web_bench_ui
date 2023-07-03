@@ -85,6 +85,10 @@ fn App() -> Html {
                     <BarChart results={testing_results.clone()} selected_test_name={(*selected_test_name).clone()}></BarChart>
                 </div>
             </div>
+             <footer>
+              <p>{"Built using "} <a href="https://yew.rs/">{"yew"}</a></p>
+              <p><a href="https://github.com/antonguzun/webservers_benchmark">{"GitHub"}</a></p>
+            </footer>
         </>
     }
 }

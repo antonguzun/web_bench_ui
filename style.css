@@ -73,6 +73,23 @@ line {
   opacity: 0.7;
 }
 
+.axis_lang {
+  font: 12px sans-serif;
+  opacity: 0.7;
+}
+
+.axis_ws {
+  font: 10px sans-serif;
+  opacity: 0.7;
+}
+
 svg {
   width: auto;
+}
+
+footer {
+  margin-top: 4rem;
+  padding: 2rem 1rem 1.5rem 1rem;
+  border-top: 0.5px solid gray;
+  text-align: center;
 }

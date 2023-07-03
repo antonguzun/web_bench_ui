@@ -1,4 +1,5 @@
 use std::cmp::max;
+use std::cmp::min;
 
 use itertools::Itertools;
 use yew::classes;
@@ -24,7 +25,7 @@ pub fn bar_chart(props: &BarChartProps) -> Html {
     let local_x_offset = 70.0;
 
     let max_bar_width = 55.0;
-    let min_bar_width = 15.0;
+    let min_bar_width = 50.0;
     let bars_number = props
         .results
         .iter()
@@ -65,8 +66,120 @@ pub fn bar_chart(props: &BarChartProps) -> Html {
         <>
             // {format!("t_w:{} w_w:{} offset_x:{}", table_size, window_width, x_offset)}
             // <svg style="90%" viewBox="0 0 800 330" >
-            <svg viewBox="0 0 1000 330">
-                <g transform="translate(0, 10)">
+            <svg viewBox="0 0 1000 350">
+                    <g class="x axis_lang" transform="translate(0,280)">
+                        {
+                            props
+                                .results
+                                .iter()
+                                .filter(|r| r.test_name == props.selected_test_name)
+                                .sorted_by_key(|r| -(r.requests_per_second as i64))
+                                .enumerate()
+                                .map(|(i, result)| {
+                                    let rect_height = result.requests_per_second * one_percent;
+                                    let y = max_height - rect_height;
+                                    let x = i as f64 * (bar_width + space_width);
+                                    html! {
+                                        <g class="tick" style="opacity: 0.7;" transform="translate(100,0)">
+                                            <line y2="6" x1={format!{"{}", x}} x2={format!{"{}", x}}></line>
+                                            <text
+                                             dy=".5em" style="text-anchor: middle;" y="11" x={format!{"{}", x}}>
+                                                {result.language.clone()}
+                                            </text>
+                                        </g>
+                                    }
+                                })
+                                .collect::<Html>()
+                         }
+                    </g>
+                    <g class="x axis_ws" transform="translate(0,280)">
+                        {
+                            props
+                                .results
+                                .iter()
+                                .filter(|r| r.test_name == props.selected_test_name)
+                                .sorted_by_key(|r| -(r.requests_per_second as i64))
+                                .enumerate()
+                                .map(|(i, result)| {
+                                    let rect_height = result.requests_per_second * one_percent;
+                                    let y = max_height - rect_height;
+                                    let x = i as f64 * (bar_width + space_width);
+                                    html! {
+                                        <g class="tick" style="opacity: 0.7;" transform="translate(100,0)">
+                                            <text
+                                                 dy=".5em" style="text-anchor: middle;" y="25" x={format!{"{}", x}}>
+                                                {result.webserver_name.split('[').next().unwrap()}
+                                            </text>
+                                        </g>
+                                    }
+                                })
+                                .collect::<Html>()
+                         }
+                    </g>
+                    <g class="x axis_ws" transform="translate(0,280)">
+                        {
+                            props
+                                .results
+                                .iter()
+                                .filter(|r| r.test_name == props.selected_test_name)
+                                .sorted_by_key(|r| -(r.requests_per_second as i64))
+                                .enumerate()
+                                .map(|(i, result)| {
+                                    let rect_height = result.requests_per_second * one_percent;
+                                    let y = max_height - rect_height;
+                                    let x = i as f64 * (bar_width + space_width);
+
+                                    html! {
+                                        if let Some(database) = &result.database {
+                                            <g class="tick" style="opacity: 0.7;" transform="translate(100,0)">
+                                                <text
+                                                     dy=".5em" style="text-anchor: middle;" y="38" x={format!{"{}", x}}>
+                                                    {database.split('[').next().unwrap()}
+                                                </text>
+                                            </g>
+                                        }
+                                    }
+                                })
+                                .collect::<Html>()
+                         }
+                    </g>
+                    <g class="x axis_ws" transform="translate(0,280)">
+                        {
+                            props
+                                .results
+                                .iter()
+                                .filter(|r| r.test_name == props.selected_test_name)
+                                .sorted_by_key(|r| -(r.requests_per_second as i64))
+                                .enumerate()
+                                .map(|(i, result)| {
+                                    let rect_height = result.requests_per_second * one_percent;
+                                    let y = max_height - rect_height;
+                                    let x = i as f64 * (bar_width + space_width);
+
+
+                                    html! {
+                                        if let Some(database) = &result.database {
+                                            if let Some(tail) = &database.split('[').last() {
+
+                                                <g class="tick" style="opacity: 0.7;" transform="translate(100,0)">
+                                                    <text
+                                                         dy=".5em" style="text-anchor: middle;" y="50" x={format!{"{}", x}}>
+                                                            {
+                                                                match tail.replace("]", "").len() >= 10 {
+                                                                    true  => format!("{}..", &tail.replace("]", "")[0..min(8,tail.len() - 2)].to_owned()),
+                                                                    false  => tail.replace("]", "").to_owned().to_owned(),
+                                                                }
+                                                            }
+                                                    </text>
+                                                </g>
+                                            }
+                                        }
+                                    }
+                                })
+                                .collect::<Html>()
+                         }
+                    </g>
+                    <g transform="translate(0, 10)">
 
                     <line
                         x1={format!("{}", local_x_offset - y_axis_x_offset)}
