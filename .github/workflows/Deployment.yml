@@ -10,7 +10,6 @@ jobs:
       with:
         version: 'v0.16.0'
     - name: build trunk release
-      uses: actions/checkout@v4
       run: make prod
     - name: upload dist 
       uses: actions/upload-artifact@v3
