@@ -2,12 +2,22 @@ name: DEPLOY
 on: workflow_dispatch
 
 jobs:
-  build_trunk:
+  build:
     runs-on: ubuntu-latest
     steps:
-    - uses: jetli/trunk-action@v0.4.0
+    - name: load trunk
+      uses: jetli/trunk-action@v0.4.0
       with:
         version: 'v0.16.0'
+    - name: build trunk release
+      uses: actions/checkout@v4
+      run: make prod
+    - name: upload dist 
+      uses: actions/upload-artifact@v3
+      with:
+        name: dist
+        path: |
+          dist/*
   # deploy_app:
   #   needs: build_trunk
   #   runs-on: ubuntu-latest
