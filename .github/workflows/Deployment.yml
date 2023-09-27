@@ -10,7 +10,11 @@ jobs:
       with:
         version: 'v0.16.0'
     - name: build trunk release
-      run: make prod
+      run: trunk build --release
+    - name: show pwd
+      run: pwd
+    - name: show ls
+      run: ls
     - name: upload dist 
       uses: actions/upload-artifact@v3
       with:
