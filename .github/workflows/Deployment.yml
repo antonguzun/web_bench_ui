@@ -1,0 +1,22 @@
+name: DEPLOY
+on: workflow_dispatch
+
+jobs:
+  build_trunk:
+    - uses: jetli/trunk-action@v0.4.0
+      with:
+        version: 'v0.16.0'
+  # deploy_app:
+  #   needs: build_trunk
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #   - uses: actions/checkout@v3
+  #   - name: rsync upload dist
+  #     uses: burnett01/rsync-deployments@6.0.0
+  #     with:
+  #       switches: -vzr --delete
+  #       path: conf.d/
+  #       remote_path: /home/www-data/web_bench/
+  #       remote_host: ${{ secrets.HOST }}
+  #       remote_user: ${{ secrets.USERNAME }}
+  #       remote_key: ${{ secrets.DEPLOY_KEY }}
