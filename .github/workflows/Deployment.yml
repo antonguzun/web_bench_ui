@@ -9,12 +9,12 @@ jobs:
       uses: jetli/trunk-action@v0.4.0
       with:
         version: 'v0.16.0'
-    - name: build trunk release
-      run: trunk build --release
     - name: show pwd
       run: pwd
     - name: show ls
       run: ls
+    - name: build trunk release
+      run: trunk build --release
     - name: upload dist 
       uses: actions/upload-artifact@v3
       with:
