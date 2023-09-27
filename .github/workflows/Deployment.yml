@@ -9,8 +9,12 @@ jobs:
       uses: jetli/trunk-action@v0.4.0
       with:
         version: 'v0.16.0'
+    - name: checkout
+      uses: actions/checkout@v4
+    - name: go to workspace
+      run: cd ${GITHUB_WORKSPACE}
     - name: show pwd
-      run: pwd
+      run: ls
     - name: show ls
       run: ls
     - name: build trunk release
