@@ -54,7 +54,7 @@ fn App() -> Html {
         <>
             <div class={classes!("center")}>
                 <div class={classes!("row")}>
-                    <h1>{ "Web servers bench" }</h1>
+                    <h1>{ "Web servers bench1" }</h1>
 
                     {created_at}
                     <br/>
