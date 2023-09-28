@@ -17,6 +17,8 @@ jobs:
       run: ls
     - name: show ls
       run: ls
+    - name: add wasm32 target
+      run: rustup target add wasm32-unknown-unknown
     - name: build trunk release
       run: trunk build --release
     - name: upload dist 
