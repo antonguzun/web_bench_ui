@@ -13,31 +13,22 @@ jobs:
       uses: actions/checkout@v4
     - name: go to workspace
       run: cd ${GITHUB_WORKSPACE}
-    - name: show pwd
-      run: ls
-    - name: show ls
-      run: ls
     - name: add wasm32 target
       run: rustup target add wasm32-unknown-unknown
     - name: build trunk release
       run: trunk build --release
-    - name: upload dist 
-      uses: actions/upload-artifact@v3
+    - name: rsync upload dist on server
+      uses: burnett01/rsync-deployments@6.0.0
       with:
-        name: dist
-        path: |
-          dist/*
-  # deploy_app:
-  #   needs: build_trunk
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #   - uses: actions/checkout@v3
-  #   - name: rsync upload dist
-  #     uses: burnett01/rsync-deployments@6.0.0
-  #     with:
-  #       switches: -vzr --delete
-  #       path: conf.d/
-  #       remote_path: /home/www-data/web_bench/
-  #       remote_host: ${{ secrets.HOST }}
-  #       remote_user: ${{ secrets.USERNAME }}
-  #       remote_key: ${{ secrets.DEPLOY_KEY }}
+        switches: -vzr --delete
+        path: dist/
+        remote_path: /home/www-data/web_bench/dist
+        remote_host: ${{ secrets.HOST }}
+        remote_user: ${{ secrets.USERNAME }}
+        remote_key: ${{ secrets.DEPLOY_KEY }}
+    # - name: upload dist 
+    #   uses: actions/upload-artifact@v3
+    #   with:
+    #     name: dist
+    #     path: |
+    #       dist/*
